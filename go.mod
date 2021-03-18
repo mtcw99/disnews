@@ -1,3 +1,4 @@
-module mtcw99.github.io/m/v2
+module github.com/mtcw99/disnews
 
 go 1.16
+
