@@ -5,26 +5,27 @@ import (
 	"net/http"
 )
 
-type Page struct {
-	Title string
-	Body  []byte
-}
-
+// Paths information for HTML render functionalities
 type RenderInfo struct {
-	Path string
+	PathTemplates string
+	PathStatic    string
 }
 
+// Global RenderInfo variable
 var Info = RenderInfo{
-	Path: "./templates/"}
+	PathTemplates: "./templates/",
+	PathStatic:    "./static/"}
 
+// Renders the given template file (templatePath), given base.html exists and used
 func RenderTemplate(w http.ResponseWriter, templatePath string) {
-	t, err := template.ParseFiles(Info.Path + templatePath)
+	t, err := template.ParseFiles(Info.PathTemplates+templatePath,
+		Info.PathTemplates+"base.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = t.Execute(w, nil)
+	err = t.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
