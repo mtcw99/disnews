@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -34,7 +35,7 @@ func (d *Database) New(path string) error {
 }
 
 // Setup the database
-func (d *Database) Setup(post Post) error {
+func (d *Database) Setup() error {
 	sqlst := `
 	CREATE TABLE Posts (
 		  id INTEGER NOT NULL PRIMARY KEY
@@ -54,11 +55,11 @@ func (d *Database) Setup(post Post) error {
 }
 
 // Submit a new post into the database
-func (d *Database) SubmitPost(post Post) error {
+func (d *Database) SubmitPost(post Post) (int64, error) {
 	tx, err := d.db.Begin()
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return 0, err
 	}
 
 	statement, err := tx.Prepare(`
@@ -67,21 +68,47 @@ func (d *Database) SubmitPost(post Post) error {
 	`)
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return 0, err
 	}
 	defer statement.Close()
 
-	_, err = statement.Exec(post.Title,
+	res, err := statement.Exec(post.Title,
 		post.Link,
 		post.Comment)
 
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return 0, err
+	}
+
+	id, err := res.LastInsertId()
+
+	if err != nil {
+		log.Fatal(err)
+		return 0, err
 	}
 
 	tx.Commit()
-	return nil
+	return id, nil
+}
+
+func (d *Database) GetPost(indexStr string) (Post, error) {
+	row := d.db.QueryRow(`
+	SELECT title, link, comment FROM Posts
+	WHERE id=?
+	`, indexStr)
+
+	if row == nil {
+		return Post{}, fmt.Errorf("ERROR: core: Database.GetPost: id %s not found.", indexStr)
+	}
+
+	var post Post
+	err := row.Scan(&post.Title, &post.Link, &post.Comment)
+	if err != nil {
+		return Post{}, err
+	} else {
+		return post, nil
+	}
 }
 
 // Gets the newests posts from the database

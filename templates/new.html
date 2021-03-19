@@ -2,8 +2,16 @@
 {{define "content"}}
 <h1>Submission</h1>
 <form action="/submit/" method="post">
-  <input type="text" name="title">
-  <input type="submit" name="Submit">
+  <label for="title">Title</label><br>
+  <input type="text" name="title"><br>
+
+  <label for="link">Link</label><br>
+  <input type="text" name="link"><br>
+
+  <label for="comment">Comment</label><br>
+  <textarea name="comment" rows="4" cols="59"></textarea><br>
+
+  <input type="submit" value="Submit">
 </form>
 {{end}}
 

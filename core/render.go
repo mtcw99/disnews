@@ -17,16 +17,19 @@ var Info = RenderInfo{
 	PathStatic:    "./static/"}
 
 // Renders the given template file (templatePath), given base.html exists and used
-func RenderTemplate(w http.ResponseWriter, templatePath string) {
+func RenderTemplate(w http.ResponseWriter, templatePath string, data interface{}) error {
 	t, err := template.ParseFiles(Info.PathTemplates+templatePath,
 		Info.PathTemplates+"base.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
-	err = t.ExecuteTemplate(w, "base", nil)
+	err = t.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
 	}
+
+	return nil
 }

@@ -14,12 +14,12 @@ func Root(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	core.RenderTemplate(w, "index.html")
+	core.RenderTemplate(w, "index.html", nil)
 }
 
 // New post handler
 func NewPost(w http.ResponseWriter, r *http.Request) {
-	core.RenderTemplate(w, "new.html")
+	core.RenderTemplate(w, "new.html", nil)
 }
 
 // Post submission handler | Requires a POST request
@@ -27,15 +27,26 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 	title := r.FormValue("title")
 	link := r.FormValue("link")
 	comment := r.FormValue("comment")
-	core.DBase.SubmitPost(core.Post{
+	id, err := core.DBase.SubmitPost(core.Post{
 		Title:   title,
 		Link:    link,
 		Comment: comment})
+	if err != nil {
+		core.RenderTemplate(w, "index.html", nil)
+	} else {
+		core.RenderTemplate(w, "submitted.html", id)
+	}
 }
 
 // View the requested post
 func PostView(w http.ResponseWriter, r *http.Request) {
-	core.RenderTemplate(w, "view.html")
+	id := r.URL.Path[len("/post/"):]
+	post, err := core.DBase.GetPost(id)
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusNotFound)
+	} else {
+		core.RenderTemplate(w, "post.html", post)
+	}
 }
 
 // CSS Handler serves static CSS Files
@@ -52,6 +63,6 @@ func Js(w http.ResponseWriter, r *http.Request) {
 func errorHandler(w http.ResponseWriter, r *http.Request, status int, errorTmplFile string) {
 	w.WriteHeader(status)
 	if status == http.StatusNotFound {
-		core.RenderTemplate(w, errorTmplFile)
+		core.RenderTemplate(w, errorTmplFile, nil)
 	}
 }
