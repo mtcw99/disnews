@@ -2,9 +2,13 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
+	"time"
 	"net/http"
 
 	"github.com/mtcw99/disnews/core"
+	"github.com/mtcw99/disnews/database"
 )
 
 // '/' Root/main page handler, also catches 404 errors
@@ -14,7 +18,12 @@ func Root(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	core.RenderTemplate(w, "index.html", nil)
+	posts, err := database.DBase.GetNewestPosts()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	core.RenderTemplate(w, "index.html", posts)
 }
 
 // New post handler
@@ -27,7 +36,16 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 	title := r.FormValue("title")
 	link := r.FormValue("link")
 	comment := r.FormValue("comment")
-	id, err := core.DBase.SubmitPost(core.Post{
+
+	// Check Link
+	switch {
+	case link[:len("https://")] != "https://",
+		link[:len("http://")] != "http://":
+
+		link = "https://" + link
+	}
+
+	id, err := database.DBase.SubmitPost(core.Post{
 		Title:   title,
 		Link:    link,
 		Comment: comment})
@@ -41,7 +59,7 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 // View the requested post
 func PostView(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/post/"):]
-	post, err := core.DBase.GetPost(id)
+	post, err := database.DBase.GetPost(id)
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
@@ -57,6 +75,61 @@ func Css(w http.ResponseWriter, r *http.Request) {
 // JS Handler serves static JavaScript Files
 func Js(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, core.Info.PathStatic+"js/"+r.URL.Path[len("/js/"):])
+}
+
+// Login Handler | Handles signups and logins requests
+func Login(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	actionType := r.FormValue("action")
+	switch actionType {
+	case "Login", "Create Account":
+		username := r.FormValue("username")
+		password := r.FormValue("password")
+		switch actionType {
+		case "Login":
+			login, err := database.DBase.Login(username)
+			if err != nil {
+				fmt.Println(err)
+				core.RenderTemplate(w, "login.html",
+					"ERROR: Invalid Login")
+				return
+			}
+
+			if !login.Validate(password) {
+				core.RenderTemplate(w, "login.html",
+					"ERROR: Invalid Login")
+				return
+			}
+
+			// TODO: Set session cookie
+			expire := time.Now().Add(24 * time.Hour)
+			cookie := http.Cookie{
+				Name: "session_id",
+				Value: "testing",
+				Expires: expire,
+			}
+			http.SetCookie(w, &cookie)
+		case "Create Account":
+			login, err := core.LoginCreate(username, password)
+			if err != nil {
+				core.RenderTemplate(w, "login.html",
+					"ERROR: Cannot create account")
+				return
+			}
+
+			err = database.DBase.Signup(login)
+			if err != nil {
+				fmt.Println(err)
+				core.RenderTemplate(w, "login.html",
+					"ERROR: Cannot create account")
+				return
+			}
+		}
+		http.Redirect(w, r, "/", http.StatusFound)
+	default:
+		// User entering the login page
+		core.RenderTemplate(w, "login.html", nil)
+	}
 }
 
 // Error handler gets status and file rendered for the status

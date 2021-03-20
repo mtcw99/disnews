@@ -1,0 +1,17 @@
+{{define "title"}}disnews - Login/Signup{{end}}
+{{define "content"}}
+<h1>disnews</h1>
+<h2>Login/Sign-Up</h2>
+{{if .}}
+  <p>{{.}}</p>
+{{end}}
+<form action="/login/" method="post">
+  <label for="username">Username</label><br>
+  <input type="text" name="username"><br>
+  <label for="password">Password</label><br>
+  <input type="password" name="password"><br><br>
+  <input type="submit" name="action" value="Login">
+  <input type="submit" name="action" value="Create Account">
+</form>
+{{end}}
+

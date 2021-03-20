@@ -6,18 +6,19 @@ import (
 	"net/http"
 
 	"github.com/mtcw99/disnews/core"
+	"github.com/mtcw99/disnews/database"
 	"github.com/mtcw99/disnews/handlers"
 )
 
 func main() {
 	core.Info.PathTemplates = "./templates/"
-	err := core.DBase.New("./test.db")
-	core.DBase.Setup()
+	err := database.DBase.New("./test.db")
+	database.DBase.Setup()
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	defer core.DBase.Close()
+	defer database.DBase.Close()
 
 	fmt.Println("Serving at: http://localhost:8080/")
 
@@ -27,5 +28,6 @@ func main() {
 	http.HandleFunc("/post/", handlers.PostView)
 	http.HandleFunc("/css/", handlers.Css)
 	http.HandleFunc("/js/", handlers.Js)
+	http.HandleFunc("/login/", handlers.Login)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

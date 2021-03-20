@@ -1,0 +1,76 @@
+package database
+
+import (
+	"fmt"
+
+	"github.com/mtcw99/disnews/core"
+	_ "github.com/mattn/go-sqlite3"
+)
+
+// Submit a new post into the database
+func (d *Database) SubmitPost(post core.Post) (int64, error) {
+	res, err := d.db.Exec(`
+	INSERT INTO Posts(title, link, comment)
+	values(?, ?, ?)
+	`, post.Title, post.Link, post.Comment)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (d *Database) GetPost(indexStr string) (core.Post, error) {
+	row := d.db.QueryRow(`
+	SELECT title, link, comment FROM Posts
+	WHERE id=?
+	`, indexStr)
+
+	if row == nil {
+		return core.Post{}, fmt.Errorf("ERROR: Database.GetPost: id %s not found.", indexStr)
+	}
+
+	var post core.Post
+	err := row.Scan(&post.Title, &post.Link, &post.Comment)
+	if err != nil {
+		return core.Post{}, err
+	} else {
+		return post, nil
+	}
+}
+
+// Gets the newests posts from the database
+func (d *Database) GetNewestPosts() ([]core.Post, error) {
+	rows, err := d.db.Query(`
+	SELECT id, title, link, comment FROM Posts
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []core.Post
+
+	for rows.Next() {
+		var post core.Post
+		err = rows.Scan(&post.Id, &post.Title, &post.Link, &post.Comment)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+

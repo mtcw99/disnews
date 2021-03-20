@@ -6,6 +6,7 @@ import (
 
 // Information about the post
 type Post struct {
+	Id	int64
 	Title   string
 	Link    string
 	Comment string
@@ -13,5 +14,5 @@ type Post struct {
 
 // Returns the string for the Post struct
 func (p *Post) String() string {
-	return fmt.Sprintf("%s (%s) | %s", p.Title, p.Link, p.Comment)
+	return fmt.Sprintf("%d: %s (%s) | %s", p.Id, p.Title, p.Link, p.Comment)
 }

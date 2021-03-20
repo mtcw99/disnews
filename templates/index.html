@@ -1,9 +1,10 @@
 {{define "title"}}disnews - Homepage{{end}}
 {{define "content"}}
 <h1>disnews</h1>
-<p>
-Testing 123
-</p>
-<a href="#">Testing link</a>
+{{range $item := .}}
+<a href="{{$item.Link}}"><b>{{$item.Title}}</b></a><br>
+<small>({{$item.Link}}) <a href="/post/{{$item.Id}}">Comment</a></small><br>
+<br>
+{{end}}
 {{end}}
 
