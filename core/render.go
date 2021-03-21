@@ -3,6 +3,8 @@ package core
 import (
 	"html/template"
 	"net/http"
+
+	"github.com/mtcw99/disnews/sessions"
 )
 
 // Paths information for HTML render functionalities
@@ -17,7 +19,8 @@ var Info = RenderInfo{
 	PathStatic:    "./static/"}
 
 // Renders the given template file (templatePath), given base.html exists and used
-func RenderTemplate(w http.ResponseWriter, templatePath string, data interface{}) error {
+func RenderTemplate(w http.ResponseWriter, templatePath string,
+		sessionInfo *sessions.SessionInfo, data interface{}) error {
 	t, err := template.ParseFiles(Info.PathTemplates+templatePath,
 		Info.PathTemplates+"base.html")
 	if err != nil {

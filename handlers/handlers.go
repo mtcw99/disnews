@@ -4,11 +4,11 @@ package handlers
 import (
 	"fmt"
 	"log"
-	"time"
 	"net/http"
 
 	"github.com/mtcw99/disnews/core"
 	"github.com/mtcw99/disnews/database"
+	"github.com/mtcw99/disnews/sessions"
 )
 
 // '/' Root/main page handler, also catches 404 errors
@@ -18,17 +18,38 @@ func Root(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Session
+	hasSession := false
+	cookie, err := r.Cookie("session_id")
+	var sessionInfo sessions.SessionInfo
+	if err == nil {
+		uuid := cookie.Value
+		hasSession = sessions.GSession.ValidateSession(uuid)
+		if hasSession {
+			var ok bool
+			sessionInfo, ok = sessions.GSession.Get(uuid)
+			if !ok {
+				hasSession = false
+			}
+		}
+	}
+
 	posts, err := database.DBase.GetNewestPosts()
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	core.RenderTemplate(w, "index.html", posts)
+
+	if hasSession {
+		core.RenderTemplate(w, "index.html", &sessionInfo, posts)
+	} else {
+		core.RenderTemplate(w, "index.html", nil, posts)
+	}
 }
 
 // New post handler
 func NewPost(w http.ResponseWriter, r *http.Request) {
-	core.RenderTemplate(w, "new.html", nil)
+	core.RenderTemplate(w, "new.html", nil, nil)
 }
 
 // Post submission handler | Requires a POST request
@@ -50,9 +71,9 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 		Link:    link,
 		Comment: comment})
 	if err != nil {
-		core.RenderTemplate(w, "index.html", nil)
+		core.RenderTemplate(w, "index.html", nil, nil)
 	} else {
-		core.RenderTemplate(w, "submitted.html", id)
+		core.RenderTemplate(w, "submitted.html", nil, id)
 	}
 }
 
@@ -63,7 +84,7 @@ func PostView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "post.html", post)
+		core.RenderTemplate(w, "post.html", nil, post)
 	}
 }
 
@@ -91,29 +112,35 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println(err)
 				core.RenderTemplate(w, "login.html",
-					"ERROR: Invalid Login")
+					nil, "ERROR: Invalid Login")
 				return
 			}
 
 			if !login.Validate(password) {
 				core.RenderTemplate(w, "login.html",
-					"ERROR: Invalid Login")
+					nil, "ERROR: Invalid Login")
 				return
 			}
 
-			// TODO: Set session cookie
-			expire := time.Now().Add(24 * time.Hour)
+			uuid, err := sessions.GSession.NewSession(username)
+			if err != nil {
+				core.RenderTemplate(w, "login.html",
+					nil, "ERROR: Session Error")
+				return
+			}
+			sessionInfo := sessions.GSession.Keys[uuid]
+
 			cookie := http.Cookie{
 				Name: "session_id",
-				Value: "testing",
-				Expires: expire,
+				Value: uuid,
+				Expires: sessionInfo.Expire,
 			}
 			http.SetCookie(w, &cookie)
 		case "Create Account":
 			login, err := core.LoginCreate(username, password)
 			if err != nil {
 				core.RenderTemplate(w, "login.html",
-					"ERROR: Cannot create account")
+					nil, "ERROR: Cannot create account")
 				return
 			}
 
@@ -121,14 +148,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println(err)
 				core.RenderTemplate(w, "login.html",
-					"ERROR: Cannot create account")
+					nil, "ERROR: Cannot create account")
 				return
 			}
 		}
 		http.Redirect(w, r, "/", http.StatusFound)
 	default:
 		// User entering the login page
-		core.RenderTemplate(w, "login.html", nil)
+		core.RenderTemplate(w, "login.html", nil, nil)
 	}
 }
 
@@ -136,6 +163,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func errorHandler(w http.ResponseWriter, r *http.Request, status int, errorTmplFile string) {
 	w.WriteHeader(status)
 	if status == http.StatusNotFound {
-		core.RenderTemplate(w, errorTmplFile, nil)
+		core.RenderTemplate(w, errorTmplFile, nil, nil)
 	}
 }
