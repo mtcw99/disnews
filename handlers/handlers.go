@@ -4,6 +4,7 @@ package handlers
 import (
 	"fmt"
 	"log"
+	"time"
 	"net/http"
 
 	"github.com/mtcw99/disnews/core"
@@ -11,14 +12,7 @@ import (
 	"github.com/mtcw99/disnews/sessions"
 )
 
-// '/' Root/main page handler, also catches 404 errors
-func Root(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		errorHandler(w, r, http.StatusNotFound, "404.html")
-		return
-	}
-
-	// Session
+func fetchSession(r *http.Request) *sessions.SessionInfo {
 	hasSession := false
 	cookie, err := r.Cookie("session_id")
 	var sessionInfo sessions.SessionInfo
@@ -34,22 +28,37 @@ func Root(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if hasSession {
+		return &sessionInfo
+	} else {
+		return nil
+	}
+}
+
+// '/' Root/main page handler, also catches 404 errors
+func Root(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		errorHandler(w, r, http.StatusNotFound, "404.html")
+		return
+	}
+
 	posts, err := database.DBase.GetNewestPosts()
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	if hasSession {
-		core.RenderTemplate(w, "index.html", &sessionInfo, posts)
-	} else {
-		core.RenderTemplate(w, "index.html", nil, posts)
-	}
+	core.RenderTemplate(w, "index.html", fetchSession(r), posts)
 }
 
 // New post handler
 func NewPost(w http.ResponseWriter, r *http.Request) {
-	core.RenderTemplate(w, "new.html", nil, nil)
+	session := fetchSession(r)
+	if session == nil {
+		http.Redirect(w, r, "/", http.StatusNotFound)
+	} else {
+		core.RenderTemplate(w, "new.html", session, nil)
+	}
 }
 
 // Post submission handler | Requires a POST request
@@ -58,22 +67,27 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 	link := r.FormValue("link")
 	comment := r.FormValue("comment")
 
-	// Check Link
-	switch {
-	case link[:len("https://")] != "https://",
-		link[:len("http://")] != "http://":
+	session := fetchSession(r)
+	if session == nil {
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
 
+	// Check Link
+	if link[:len("https://")] != "https://" && link[:len("http://")] != "http://" {
 		link = "https://" + link
 	}
 
 	id, err := database.DBase.SubmitPost(core.Post{
+		User:	 session.Name,
 		Title:   title,
 		Link:    link,
 		Comment: comment})
 	if err != nil {
-		core.RenderTemplate(w, "index.html", nil, nil)
+		// TODO: Error message
+		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "submitted.html", nil, id)
+		core.RenderTemplate(w, "submitted.html", session, id)
 	}
 }
 
@@ -84,7 +98,7 @@ func PostView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "post.html", nil, post)
+		core.RenderTemplate(w, "post.html", fetchSession(r), post)
 	}
 }
 
@@ -134,6 +148,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 				Name: "session_id",
 				Value: uuid,
 				Expires: sessionInfo.Expire,
+				Path: "/",
 			}
 			http.SetCookie(w, &cookie)
 		case "Create Account":
@@ -155,14 +170,25 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
 	default:
 		// User entering the login page
-		core.RenderTemplate(w, "login.html", nil, nil)
+		core.RenderTemplate(w, "login.html", fetchSession(r), nil)
 	}
+}
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	cookie := http.Cookie{
+		Name: "session_id",
+		Value: "",
+		Expires: time.Unix(0, 0),
+		Path: "/",
+	}
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 // Error handler gets status and file rendered for the status
 func errorHandler(w http.ResponseWriter, r *http.Request, status int, errorTmplFile string) {
 	w.WriteHeader(status)
 	if status == http.StatusNotFound {
-		core.RenderTemplate(w, errorTmplFile, nil, nil)
+		core.RenderTemplate(w, errorTmplFile, fetchSession(r), nil)
 	}
 }

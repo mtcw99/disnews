@@ -13,6 +13,11 @@ type RenderInfo struct {
 	PathStatic    string
 }
 
+type TemplateInfo struct {
+	SessionInfo	*sessions.SessionInfo
+	Data		interface{}
+}
+
 // Global RenderInfo variable
 var Info = RenderInfo{
 	PathTemplates: "./templates/",
@@ -28,7 +33,9 @@ func RenderTemplate(w http.ResponseWriter, templatePath string,
 		return err
 	}
 
-	err = t.ExecuteTemplate(w, "base", data)
+	err = t.ExecuteTemplate(w, "base", TemplateInfo{
+			SessionInfo: sessionInfo,
+			Data: data})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err

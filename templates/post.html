@@ -1,10 +1,10 @@
-{{define "title"}}disnews - {{.Title}}{{end}}
+{{define "title"}}disnews - {{.Data.Title}}{{end}}
 {{define "content"}}
 <h1>disnews</h1>
-<h2><a href="{{.Link}}">{{.Title}}</a></h2>
-<small>{{.Link}}</small>
+<h2><a href="{{.Data.Link}}">{{.Data.Title}}</a></h2>
+<small>{{.Data.Link}}</small>
 <p>
-{{.Comment}}
+{{.Data.Comment}}
 </p>
 {{end}}
 

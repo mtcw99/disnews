@@ -2,8 +2,8 @@
 {{define "content"}}
 <h1>disnews</h1>
 <h2>Login/Sign-Up</h2>
-{{if .}}
-  <p>{{.}}</p>
+{{if .Data}}
+  <p>{{.Data}}</p>
 {{end}}
 <form action="/login/" method="post">
   <label for="username">Username</label><br>

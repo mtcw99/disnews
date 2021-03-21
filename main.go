@@ -29,5 +29,6 @@ func main() {
 	http.HandleFunc("/css/", handlers.Css)
 	http.HandleFunc("/js/", handlers.Js)
 	http.HandleFunc("/login/", handlers.Login)
+	http.HandleFunc("/logout/", handlers.Logout)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

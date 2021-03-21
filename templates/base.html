@@ -8,8 +8,13 @@
   <body>
     <nav>
       <a href="/">Posts</a> |
+      {{if .SessionInfo}}
       <a href="/new/">Submit</a> |
+      <a href="/logout/">Logout</a> |
+      {{.SessionInfo.Name}}
+      {{else}}
       <a href="/login/">Login</a>
+      {{end}}
     </nav>
     {{template "content" .}}
   </body>

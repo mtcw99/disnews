@@ -7,6 +7,7 @@ import (
 // Information about the post
 type Post struct {
 	Id	int64
+	User	string
 	Title   string
 	Link    string
 	Comment string
