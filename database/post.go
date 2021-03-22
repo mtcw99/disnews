@@ -3,16 +3,21 @@ package database
 import (
 	"fmt"
 
-	"github.com/mtcw99/disnews/core"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/mtcw99/disnews/core"
 )
 
 // Submit a new post into the database
 func (d *Database) SubmitPost(post core.Post) (int64, error) {
+	userid, err := d.GetLoginId(post.User)
+	if err != nil {
+		return 0, err
+	}
+
 	res, err := d.db.Exec(`
-	INSERT INTO Posts(title, link, comment)
-	values(?, ?, ?)
-	`, post.Title, post.Link, post.Comment)
+	INSERT INTO Posts(title, link, comment, user_id)
+	values(?, ?, ?, ?)
+	`, post.Title, post.Link, post.Comment, userid)
 	if err != nil {
 		return 0, err
 	}
@@ -27,7 +32,7 @@ func (d *Database) SubmitPost(post core.Post) (int64, error) {
 
 func (d *Database) GetPost(indexStr string) (core.Post, error) {
 	row := d.db.QueryRow(`
-	SELECT title, link, comment FROM Posts
+	SELECT title, link, comment, user_id FROM Posts
 	WHERE id=?
 	`, indexStr)
 
@@ -36,7 +41,13 @@ func (d *Database) GetPost(indexStr string) (core.Post, error) {
 	}
 
 	var post core.Post
-	err := row.Scan(&post.Title, &post.Link, &post.Comment)
+	var userid int
+	err := row.Scan(&post.Title, &post.Link, &post.Comment, &userid)
+	if err != nil {
+		return core.Post{}, err
+	}
+
+	post.User, err = d.GetLoginUserFromId(userid)
 	if err != nil {
 		return core.Post{}, err
 	} else {
@@ -47,7 +58,7 @@ func (d *Database) GetPost(indexStr string) (core.Post, error) {
 // Gets the newests posts from the database
 func (d *Database) GetNewestPosts() ([]core.Post, error) {
 	rows, err := d.db.Query(`
-	SELECT id, title, link, comment FROM Posts
+	SELECT id, title, link, comment, user_id FROM Posts
 	`)
 	if err != nil {
 		return nil, err
@@ -58,10 +69,17 @@ func (d *Database) GetNewestPosts() ([]core.Post, error) {
 
 	for rows.Next() {
 		var post core.Post
-		err = rows.Scan(&post.Id, &post.Title, &post.Link, &post.Comment)
+		var userid int
+		err = rows.Scan(&post.Id, &post.Title, &post.Link, &post.Comment, &userid)
 		if err != nil {
 			return nil, err
 		}
+
+		post.User, err = d.GetLoginUserFromId(userid)
+		if err != nil {
+			return nil, err
+		}
+
 		posts = append(posts, post)
 	}
 
@@ -72,5 +90,3 @@ func (d *Database) GetNewestPosts() ([]core.Post, error) {
 
 	return posts, nil
 }
-
-

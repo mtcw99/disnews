@@ -16,5 +16,5 @@ disnews is released under a the [GNU Affero General Public License v3.0](https:/
 * `go run .`
 
 ## Development
-* Use `go fmt github.com/mtcw99/disnews/...` before submission 
+* Use `go fmt ./...` before submission 
 

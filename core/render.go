@@ -14,8 +14,8 @@ type RenderInfo struct {
 }
 
 type TemplateInfo struct {
-	SessionInfo	*sessions.SessionInfo
-	Data		interface{}
+	SessionInfo *sessions.SessionInfo
+	Data        interface{}
 }
 
 // Global RenderInfo variable
@@ -25,7 +25,7 @@ var Info = RenderInfo{
 
 // Renders the given template file (templatePath), given base.html exists and used
 func RenderTemplate(w http.ResponseWriter, templatePath string,
-		sessionInfo *sessions.SessionInfo, data interface{}) error {
+	sessionInfo *sessions.SessionInfo, data interface{}) error {
 	t, err := template.ParseFiles(Info.PathTemplates+templatePath,
 		Info.PathTemplates+"base.html")
 	if err != nil {
@@ -34,8 +34,8 @@ func RenderTemplate(w http.ResponseWriter, templatePath string,
 	}
 
 	err = t.ExecuteTemplate(w, "base", TemplateInfo{
-			SessionInfo: sessionInfo,
-			Data: data})
+		SessionInfo: sessionInfo,
+		Data:        data})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err

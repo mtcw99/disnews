@@ -5,8 +5,8 @@ import (
 )
 
 type Login struct {
-	Username	string
-	Hashpass	[]byte	// Hashed Password
+	Username string
+	Hashpass []byte // Hashed Password
 }
 
 func (l *Login) Validate(plainpass string) bool {
@@ -24,4 +24,3 @@ func LoginCreate(username string, plainpass string) (Login, error) {
 	}
 	return login, nil
 }
-

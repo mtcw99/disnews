@@ -4,8 +4,8 @@ package handlers
 import (
 	"fmt"
 	"log"
-	"time"
 	"net/http"
+	"time"
 
 	"github.com/mtcw99/disnews/core"
 	"github.com/mtcw99/disnews/database"
@@ -73,13 +73,10 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check Link
-	if link[:len("https://")] != "https://" && link[:len("http://")] != "http://" {
-		link = "https://" + link
-	}
+	link = core.LinkFix(link)
 
 	id, err := database.DBase.SubmitPost(core.Post{
-		User:	 session.Name,
+		User:    session.Name,
 		Title:   title,
 		Link:    link,
 		Comment: comment})
@@ -145,10 +142,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			sessionInfo := sessions.GSession.Keys[uuid]
 
 			cookie := http.Cookie{
-				Name: "session_id",
-				Value: uuid,
+				Name:    "session_id",
+				Value:   uuid,
 				Expires: sessionInfo.Expire,
-				Path: "/",
+				Path:    "/",
 			}
 			http.SetCookie(w, &cookie)
 		case "Create Account":
@@ -176,10 +173,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Logout(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
-		Name: "session_id",
-		Value: "",
+		Name:    "session_id",
+		Value:   "",
 		Expires: time.Unix(0, 0),
-		Path: "/",
+		Path:    "/",
 	}
 	http.SetCookie(w, &cookie)
 	http.Redirect(w, r, "/", http.StatusFound)

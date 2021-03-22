@@ -7,7 +7,7 @@ import (
 )
 
 type SessionInfo struct {
-	Name string
+	Name   string
 	Expire time.Time
 }
 
@@ -52,4 +52,3 @@ func (s *Sessions) Get(uuid string) (SessionInfo, bool) {
 	sessionInfo, ok := s.Keys[uuid]
 	return sessionInfo, ok
 }
-
