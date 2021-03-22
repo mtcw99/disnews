@@ -12,6 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Cache Go
+      id: cache-go
+      uses: actions/cache@v2
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -23,11 +32,3 @@ jobs:
 
     - name: Test
       run: go test -v ./...
-      
-    - name: Cache
-      uses: actions/cache@v2.1.4
-      with:
-        path: |
-          ~/cache
-          !~/cache/exclude
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
