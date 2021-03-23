@@ -8,17 +8,29 @@ import (
 )
 
 func (d *Database) Signup(login core.Login) error {
-	_, err := d.db.Exec(`
-	INSERT INTO Users(name, pass)
-	values(?, ?)
-	`, login.Username, login.Hashpass)
-
+	profileid, err := d.CreateProfile(login.Username)
 	if err != nil {
 		return err
-	} else {
-		return nil
 	}
+
+	_, err = d.db.Exec(`
+	INSERT INTO Users(name, pass, profile_id)
+	values(?, ?, ?)
+	`, login.Username, login.Hashpass, profileid)
+	if err != nil {
+		errp := d.DeleteProfile(profileid)
+		if errp != nil {
+			return errp
+		} else {
+			return err
+		}
+	}
+
+	return nil
 }
+
+//func (d *Database) DeleteUser(userid int64) error {
+//}
 
 func (d *Database) Login(username string) (core.Login, error) {
 	row := d.db.QueryRow(`

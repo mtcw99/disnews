@@ -1,3 +1,5 @@
+// Package database provides functionalities to interact and set/get information to/from the database.
+// Includes login and post functionalities
 package database
 
 import (
@@ -36,10 +38,21 @@ func (d *Database) New(path string) error {
 // Setup the database
 func (d *Database) Setup() error {
 	sqlst := `
+	CREATE TABLE IF NOT EXISTS Profiles (
+		  id INTEGER NOT NULL PRIMARY KEY
+		, display_name TEXT NOT NULL
+		, info TEXT NOT NULL
+		, link TEXT NOT NULL
+	);
 	CREATE TABLE IF NOT EXISTS Users (
 		  id INTEGER NOT NULL PRIMARY KEY
 		, name TEXT NOT NULL UNIQUE
 		, pass TEXT NOT NULL UNIQUE
+		, profile_id INTEGER NOT NULL UNIQUE
+		, CONSTRAINT fk_profile_id
+			FOREIGN KEY(profile_id)
+			REFERENCES Profiles(id)
+			ON DELETE CASCADE
 	);
 	CREATE TABLE IF NOT EXISTS Posts (
 		  id INTEGER NOT NULL PRIMARY KEY

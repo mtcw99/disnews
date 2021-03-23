@@ -30,5 +30,7 @@ func main() {
 	http.HandleFunc("/js/", handlers.Js)
 	http.HandleFunc("/login/", handlers.Login)
 	http.HandleFunc("/logout/", handlers.Logout)
+	http.HandleFunc("/profile/", handlers.Profile)
+	http.HandleFunc("/profile_update/", handlers.ProfileUpdate)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

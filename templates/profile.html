@@ -1,0 +1,28 @@
+{{define "title"}}disnews - {{.Data.Username}}'s Profile{{end}}
+{{define "content"}}
+<h1>disnews</h1>
+<h2>{{.Data.DisplayName}}</h2>
+<p>{{.Data.Username}}</p>
+<p>Link: <a href="{{.Data.Link}}">{{.Data.Link}}</a></p>
+<p>Info: {{.Data.Info}}</p>
+{{if .SessionInfo}}
+  {{if eq .SessionInfo.Name .Data.Username}}
+    <h3>Edit</h3>
+    <form action="/profile_update/" method="post">
+      <input type="hidden" name="username" value="{{.SessionInfo.Name}}">
+
+      <label for="display_name">Display Name:</label><br>
+      <input type="text" name="display_name" value="{{.Data.DisplayName}}"><br><br>
+
+      <label for="link">Link:</label><br>
+      <input type="text" name="link" value="{{.Data.Link}}"><br><br>
+
+      <label for="info">Info:</label><br>
+      <textarea name="info" rows="4" cols="59">{{.Data.Info}}</textarea><br>
+
+      <input type="submit" value="Update">
+    </form>
+  {{end}}
+{{end}}
+{{end}}
+

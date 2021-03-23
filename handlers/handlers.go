@@ -182,6 +182,53 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
+func Profile(w http.ResponseWriter, r *http.Request) {
+	username := r.URL.Path[len("/profile/"):]
+	profile, err := database.DBase.GetProfile(username)
+	if err != nil {
+		fmt.Println(err)
+		http.Redirect(w, r, "/", http.StatusNotFound)
+	} else {
+		core.RenderTemplate(w, "profile.html", fetchSession(r), profile)
+	}
+}
+
+func ProfileUpdate(w http.ResponseWriter, r *http.Request) {
+	session := fetchSession(r)
+	if session == nil {
+		fmt.Println("Failed to get session")
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	r.ParseForm()
+	username := r.FormValue("username")
+	if username != session.Name {
+		fmt.Println("Mis-match session")
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	displayName := r.FormValue("display_name")
+	link := r.FormValue("link")
+	info := r.FormValue("info")
+	profileid, err := database.DBase.GetProfileId(username)
+	if err != nil {
+		fmt.Println(err)
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	err = database.DBase.UpdateProfile(profileid, displayName, info, link)
+	if err != nil {
+		fmt.Println(err)
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	http.Redirect(w, r, "/profile/" + username, http.StatusFound)
+}
+
 // Error handler gets status and file rendered for the status
 func errorHandler(w http.ResponseWriter, r *http.Request, status int, errorTmplFile string) {
 	w.WriteHeader(status)

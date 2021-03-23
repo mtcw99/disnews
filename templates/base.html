@@ -11,7 +11,7 @@
       {{if .SessionInfo}}
       <a href="/new/">Submit</a> |
       <a href="/logout/">Logout</a> |
-      {{.SessionInfo.Name}}
+      <a href="/profile/{{.SessionInfo.Name}}">{{.SessionInfo.Name}}</a>
       {{else}}
       <a href="/login/">Login</a>
       {{end}}

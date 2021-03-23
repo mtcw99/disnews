@@ -3,7 +3,7 @@
 <h1>disnews</h1>
 {{range $item := .Data}}
 <a href="{{$item.Link}}"><b>{{$item.Title}}</b></a><br>
-<small>({{$item.Link}}) by {{$item.User}} | <a href="/post/{{$item.Id}}">Comment</a></small><br>
+<small>({{$item.Link}}) by <a href="/profile/{{$item.User}}">{{$item.User}}</a> | <a href="/post/{{$item.Id}}">Comment</a></small><br>
 <br>
 {{end}}
 {{end}}
