@@ -9,6 +9,7 @@
   {{if eq .SessionInfo.Name .Data.Username}}
     <h3>Edit</h3>
     <form action="/profile_update/" method="post">
+      <input type="hidden" name="csrf_token" value="{{.CsrfToken}}">
       <input type="hidden" name="username" value="{{.SessionInfo.Name}}">
 
       <label for="display_name">Display Name:</label><br>

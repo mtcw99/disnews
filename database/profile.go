@@ -78,9 +78,9 @@ func (d *Database) GetProfileId(username string) (int64, error) {
 }
 
 func (d *Database) UpdateProfile(profileid int64,
-		displayName string,
-		info string,
-		link string) error {
+	displayName string,
+	info string,
+	link string) error {
 	_, err := d.db.Exec(`
 	UPDATE Profiles
 	SET display_name=?, info=?, link=?

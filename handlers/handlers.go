@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/justinas/nosurf"
+
 	"github.com/mtcw99/disnews/core"
 	"github.com/mtcw99/disnews/database"
 	"github.com/mtcw99/disnews/sessions"
@@ -48,7 +50,7 @@ func Root(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	core.RenderTemplate(w, "index.html", fetchSession(r), posts)
+	core.RenderTemplate(w, "index.html", fetchSession(r), posts, "")
 }
 
 // New post handler
@@ -57,7 +59,7 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 	if session == nil {
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "new.html", session, nil)
+		core.RenderTemplate(w, "new.html", session, nil, nosurf.Token(r))
 	}
 }
 
@@ -84,7 +86,7 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 		// TODO: Error message
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "submitted.html", session, id)
+		core.RenderTemplate(w, "submitted.html", session, id, "")
 	}
 }
 
@@ -95,7 +97,7 @@ func PostView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "post.html", fetchSession(r), post)
+		core.RenderTemplate(w, "post.html", fetchSession(r), post, "")
 	}
 }
 
@@ -123,20 +125,23 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println(err)
 				core.RenderTemplate(w, "login.html",
-					nil, "ERROR: Invalid Login")
+					nil, "ERROR: Invalid Login",
+					nosurf.Token(r))
 				return
 			}
 
 			if !login.Validate(password) {
 				core.RenderTemplate(w, "login.html",
-					nil, "ERROR: Invalid Login")
+					nil, "ERROR: Invalid Login",
+					nosurf.Token(r))
 				return
 			}
 
 			uuid, err := sessions.GSession.NewSession(username)
 			if err != nil {
 				core.RenderTemplate(w, "login.html",
-					nil, "ERROR: Session Error")
+					nil, "ERROR: Session Error",
+					nosurf.Token(r))
 				return
 			}
 			sessionInfo := sessions.GSession.Keys[uuid]
@@ -152,7 +157,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			login, err := core.LoginCreate(username, password)
 			if err != nil {
 				core.RenderTemplate(w, "login.html",
-					nil, "ERROR: Cannot create account")
+					nil, "ERROR: Cannot create account",
+					nosurf.Token(r))
 				return
 			}
 
@@ -160,14 +166,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println(err)
 				core.RenderTemplate(w, "login.html",
-					nil, "ERROR: Cannot create account")
+					nil, "ERROR: Cannot create account",
+					nosurf.Token(r))
 				return
 			}
 		}
 		http.Redirect(w, r, "/", http.StatusFound)
 	default:
 		// User entering the login page
-		core.RenderTemplate(w, "login.html", fetchSession(r), nil)
+		core.RenderTemplate(w, "login.html", fetchSession(r), nil, nosurf.Token(r))
 	}
 }
 
@@ -189,7 +196,7 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "profile.html", fetchSession(r), profile)
+		core.RenderTemplate(w, "profile.html", fetchSession(r), profile, nosurf.Token(r))
 	}
 }
 
@@ -226,13 +233,13 @@ func ProfileUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/profile/" + username, http.StatusFound)
+	http.Redirect(w, r, "/profile/"+username, http.StatusFound)
 }
 
 // Error handler gets status and file rendered for the status
 func errorHandler(w http.ResponseWriter, r *http.Request, status int, errorTmplFile string) {
 	w.WriteHeader(status)
 	if status == http.StatusNotFound {
-		core.RenderTemplate(w, errorTmplFile, fetchSession(r), nil)
+		core.RenderTemplate(w, errorTmplFile, fetchSession(r), nil, "")
 	}
 }

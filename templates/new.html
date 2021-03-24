@@ -2,6 +2,7 @@
 {{define "content"}}
 <h1>Submission</h1>
 <form action="/submit/" method="post">
+  <input type="hidden" name="csrf_token" value="{{.CsrfToken}}">
   <label for="title">Title</label><br>
   <input type="text" name="title"><br>
 

@@ -5,14 +5,13 @@ import (
 )
 
 type Profile struct {
-	Username string
-	DisplayName string
-	Info string
-	Link string
+	Username     string
+	DisplayName  string
+	Info         string
+	Link         string
 	CreationDate time.Time
 }
 
 //func (p *Profile) CreationDateString() string {
 //	return ""
 //}
-

@@ -6,6 +6,7 @@
   <p>{{.Data}}</p>
 {{end}}
 <form action="/login/" method="post">
+  <input type="hidden" name="csrf_token" value="{{.CsrfToken}}">
   <label for="username">Username</label><br>
   <input type="text" name="username"><br>
   <label for="password">Password</label><br>
