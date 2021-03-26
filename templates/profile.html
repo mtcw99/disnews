@@ -5,6 +5,7 @@
 <p>{{.Data.Username}}</p>
 <p>Link: <a href="{{.Data.Link}}">{{.Data.Link}}</a></p>
 <p>Info: {{.Data.Info}}</p>
+<p>Creation: {{.Data.CreationDate}}</p>
 {{if .SessionInfo}}
   {{if eq .SessionInfo.Name .Data.Username}}
     <h3>Edit</h3>

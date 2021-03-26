@@ -11,6 +11,7 @@ type Post struct {
 	Title   string
 	Link    string
 	Comment string
+	Date	string
 }
 
 // Returns the string for the Post struct

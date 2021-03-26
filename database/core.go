@@ -43,6 +43,8 @@ func (d *Database) Setup() error {
 		, display_name TEXT NOT NULL
 		, info TEXT NOT NULL
 		, link TEXT NOT NULL
+		, creation_date TEXT NOT NULL
+		, login_date TEXT
 	);
 	CREATE TABLE IF NOT EXISTS Users (
 		  id INTEGER NOT NULL PRIMARY KEY
@@ -59,6 +61,7 @@ func (d *Database) Setup() error {
 		, title TEXT
 		, link TEXT
 		, comment TEXT
+		, creation_date TEXT NOT NULL
 		, user_id INTEGER
 		, CONSTRAINT fk_user_id
 			FOREIGN KEY(user_id)
@@ -69,6 +72,7 @@ func (d *Database) Setup() error {
 		  id INTEGER NOT NULL PRIMARY KEY
 		, comment TEXT
 		, user_id INTEGER
+		, creation_date TEXT
 		, CONSTRAINT fk_user_id
 			FOREIGN KEY(user_id)
 			REFERENCES Users(id)

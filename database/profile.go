@@ -8,8 +8,8 @@ import (
 
 func (d *Database) CreateProfile(displayName string) (int64, error) {
 	res, err := d.db.Exec(`
-	INSERT INTO Profiles(display_name, info, link)
-	values(?, ?, ?)
+	INSERT INTO Profiles(display_name, info, link, creation_date)
+	values(?, ?, ?, datetime('now'))
 	`, displayName, "", "")
 	if err != nil {
 		return 0, err
@@ -36,7 +36,7 @@ func (d *Database) DeleteProfile(profileid int64) error {
 
 func (d *Database) GetProfile(username string) (core.Profile, error) {
 	row := d.db.QueryRow(`
-	SELECT Profiles.display_name, Profiles.info, Profiles.link
+	SELECT Profiles.display_name, Profiles.info, Profiles.link, Profiles.creation_date
 	FROM Profiles LEFT JOIN Users
 	ON Profiles.id = Users.profile_id
 	WHERE Users.name=?
@@ -48,7 +48,7 @@ func (d *Database) GetProfile(username string) (core.Profile, error) {
 
 	var profile core.Profile
 	profile.Username = username
-	err := row.Scan(&profile.DisplayName, &profile.Info, &profile.Link)
+	err := row.Scan(&profile.DisplayName, &profile.Info, &profile.Link, &profile.CreationDate)
 	if err != nil {
 		return core.Profile{}, err
 	}
