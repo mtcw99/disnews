@@ -11,7 +11,12 @@ type Post struct {
 	Title   string
 	Link    string
 	Comment string
-	Date	string
+	Date    string
+}
+
+type PostComments struct {
+	Post     Post
+	Comments []Comment
 }
 
 // Returns the string for the Post struct

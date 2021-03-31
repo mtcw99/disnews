@@ -30,29 +30,39 @@ func (d *Database) SubmitPost(post core.Post) (int64, error) {
 	return id, nil
 }
 
-func (d *Database) GetPost(indexStr string) (core.Post, error) {
+func (d *Database) GetPostAndComments(indexStr string) (core.PostComments, error) {
 	row := d.db.QueryRow(`
-	SELECT title, link, comment, creation_date, user_id FROM Posts
+	SELECT id, title, link, comment, creation_date, user_id FROM Posts
 	WHERE id=?
 	`, indexStr)
 
 	if row == nil {
-		return core.Post{}, fmt.Errorf("ERROR: Database.GetPost: id %s not found.", indexStr)
+		return core.PostComments{}, fmt.Errorf("ERROR: Database.GetPostAndComments: id %s not found.", indexStr)
 	}
 
-	var post core.Post
-	var userid int
-	err := row.Scan(&post.Title, &post.Link, &post.Comment, &post.Date, &userid)
+	var postComments core.PostComments
+	var userid int64
+	err := row.Scan(&postComments.Post.Id,
+		&postComments.Post.Title,
+		&postComments.Post.Link,
+		&postComments.Post.Comment,
+		&postComments.Post.Date,
+		&userid)
 	if err != nil {
-		return core.Post{}, err
+		return core.PostComments{}, err
 	}
 
-	post.User, err = d.GetLoginUserFromId(userid)
+	postComments.Post.User, err = d.GetLoginUserFromId(userid)
 	if err != nil {
-		return core.Post{}, err
-	} else {
-		return post, nil
+		return core.PostComments{}, err
 	}
+
+	postComments.Comments, err = d.GetComments(postComments.Post.Id)
+	if err != nil {
+		return core.PostComments{}, err
+	}
+
+	return postComments, nil
 }
 
 // Gets the newests posts from the database
@@ -69,7 +79,7 @@ func (d *Database) GetNewestPosts() ([]core.Post, error) {
 
 	for rows.Next() {
 		var post core.Post
-		var userid int
+		var userid int64
 		err = rows.Scan(&post.Id, &post.Title, &post.Link, &post.Comment, &post.Date, &userid)
 		if err != nil {
 			return nil, err

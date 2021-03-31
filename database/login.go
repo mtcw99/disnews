@@ -52,7 +52,7 @@ func (d *Database) Login(username string) (core.Login, error) {
 	}
 }
 
-func (d *Database) GetLoginId(username string) (int, error) {
+func (d *Database) GetLoginId(username string) (int64, error) {
 	row := d.db.QueryRow(`
 	SELECT id FROM Users
 	WHERE name=?
@@ -62,7 +62,7 @@ func (d *Database) GetLoginId(username string) (int, error) {
 		return 0, fmt.Errorf("ERROR: Database.GetLoginId: username %s not found.", username)
 	}
 
-	var id int
+	var id int64
 	err := row.Scan(&id)
 	if err != nil {
 		return 0, err
@@ -71,7 +71,7 @@ func (d *Database) GetLoginId(username string) (int, error) {
 	}
 }
 
-func (d *Database) GetLoginUserFromId(id int) (string, error) {
+func (d *Database) GetLoginUserFromId(id int64) (string, error) {
 	row := d.db.QueryRow(`
 	SELECT name FROM Users
 	WHERE id=?

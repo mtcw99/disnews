@@ -72,10 +72,15 @@ func (d *Database) Setup() error {
 		  id INTEGER NOT NULL PRIMARY KEY
 		, comment TEXT
 		, user_id INTEGER
+		, post_id INTEGER
 		, creation_date TEXT
 		, CONSTRAINT fk_user_id
 			FOREIGN KEY(user_id)
 			REFERENCES Users(id)
+			ON DELETE CASCADE
+		, CONSTRAINT fk_post_id
+			FOREIGN KEY(post_id)
+			REFERENCES Posts(id)
 			ON DELETE CASCADE
 	);
 	`

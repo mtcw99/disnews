@@ -36,6 +36,7 @@ func main() {
 	mux.HandleFunc("/logout/", handlers.Logout)
 	mux.HandleFunc("/profile/", handlers.Profile)
 	mux.HandleFunc("/profile_update/", handlers.ProfileUpdate)
+	mux.HandleFunc("/comment/", handlers.Comment)
 
 	http.ListenAndServe(":8080", nosurf.New(mux))
 }

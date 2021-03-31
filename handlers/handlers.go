@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/justinas/nosurf"
@@ -93,11 +94,12 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 // View the requested post
 func PostView(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/post/"):]
-	post, err := database.DBase.GetPost(id)
+	postComments, err := database.DBase.GetPostAndComments(id)
 	if err != nil {
+		fmt.Println(err)
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "post.html", fetchSession(r), post, "")
+		core.RenderTemplate(w, "post.html", fetchSession(r), postComments, nosurf.Token(r))
 	}
 }
 
@@ -234,6 +236,52 @@ func ProfileUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/profile/"+username, http.StatusFound)
+}
+
+func Comment(w http.ResponseWriter, r *http.Request) {
+	session := fetchSession(r)
+	if session == nil {
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	r.ParseForm()
+	username := r.FormValue("username")
+	if username != session.Name {
+		fmt.Println("Mis-match session")
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	userId, err := database.DBase.GetLoginId(username)
+	if err != nil {
+		fmt.Println("Cannot get loginId")
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	postIdStr := r.FormValue("post_id")
+
+	postId, err := strconv.ParseInt(postIdStr, 10, 64)
+	if err != nil {
+		fmt.Println("Cannot get PostId")
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	comment := r.FormValue("comment")
+	_, err = database.DBase.CommentCreate(core.Comment{
+		UserId:  userId,
+		PostId:  postId,
+		Comment: comment})
+
+	if err != nil {
+		fmt.Printf("Cannot create comment: {}", err)
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	http.Redirect(w, r, "/post/"+postIdStr, http.StatusFound)
 }
 
 // Error handler gets status and file rendered for the status

@@ -1,10 +1,34 @@
-{{define "title"}}disnews - {{.Data.Title}}{{end}}
+{{define "title"}}disnews - {{.Data.Post.Title}}{{end}}
 {{define "content"}}
 <h1>disnews</h1>
-<h2><a href="{{.Data.Link}}">{{.Data.Title}}</a></h2>
-<small>{{.Data.Link}} by <a href="/profile/{{.Data.User}}">{{.Data.User}}</a> | {{.Data.Date}}</small>
+<h2><a href="{{.Data.Post.Link}}">{{.Data.Post.Title}}</a></h2>
+<small>{{.Data.Post.Link}} by <a href="/profile/{{.Data.Post.User}}">{{.Data.Post.User}}</a> | {{.Data.Post.Date}}</small>
 <p>
-{{.Data.Comment}}
+{{.Data.Post.Comment}}
 </p>
+
+{{if .SessionInfo}}
+  <form action="/comment/" method="post">
+    <input type="hidden" name="csrf_token" value="{{.CsrfToken}}">
+    <input type="hidden" name="username" value="{{.SessionInfo.Name}}">
+    <input type="hidden" name="post_id" value="{{.Data.Post.Id}}">
+    
+    <label for="comment">Comment:</label><br>
+    <textarea name="comment" row="4" cols="59"></textarea><br>
+
+    <input type="submit" value="Submit">
+  </form>
+{{end}}
+
+{{range $comment := .Data.Comments}}
+  <div>
+    <hr>
+    <small><a href="/profile/{{$comment.Username}}">{{$comment.DisplayName}}</a> - {{$comment.DateTime}}</small>
+    <p>
+      {{$comment.Comment}}
+    </p>
+  </div>
+{{end}}
+
 {{end}}
 
