@@ -276,7 +276,7 @@ func Comment(w http.ResponseWriter, r *http.Request) {
 		Comment: comment})
 
 	if err != nil {
-		fmt.Printf("Cannot create comment: {}", err)
+		fmt.Println(err)
 		http.Redirect(w, r, "/", http.StatusNotFound)
 		return
 	}
