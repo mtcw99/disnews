@@ -4,6 +4,13 @@ import (
 	"testing"
 )
 
+func TestLinkFixNoPrefixSmall(t *testing.T) {
+	link := LinkFix("a.aa")
+	if link != "https://a.aa" {
+		t.Fatal("Does not have https:// added in")
+	}
+}
+
 func TestLinkFixNoPrefix(t *testing.T) {
 	link := LinkFix("github.com")
 	if link != "https://github.com" {

@@ -86,9 +86,10 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// TODO: Error message
 		http.Redirect(w, r, "/", http.StatusNotFound)
-	} else {
-		core.RenderTemplate(w, "submitted.html", session, id, "")
+		return
 	}
+
+	core.RenderTemplate(w, "submitted.html", session, id, nosurf.Token(r))
 }
 
 // View the requested post

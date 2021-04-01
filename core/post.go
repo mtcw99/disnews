@@ -25,7 +25,9 @@ func (p *Post) String() string {
 }
 
 func LinkFix(link string) string {
-	if link[:len("https://")] != "https://" &&
+	if len(link) <= 8 {
+		return "https://" + link
+	} else if link[:len("https://")] != "https://" &&
 		link[:len("http://")] != "http://" {
 		return "https://" + link
 	} else {
