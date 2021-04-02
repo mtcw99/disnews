@@ -52,6 +52,12 @@ func (d *Database) GetPostAndComments(indexStr string) (core.PostComments, error
 		return core.PostComments{}, err
 	}
 
+	// Gets votes of this post
+	postComments.Post.Votes, err = d.GetVotes(postComments.Post.Id)
+	if err != nil {
+		return core.PostComments{}, err
+	}
+
 	postComments.Post.User, err = d.GetLoginUserFromId(userid)
 	if err != nil {
 		return core.PostComments{}, err
@@ -80,12 +86,18 @@ func (d *Database) GetNewestPosts() ([]core.Post, error) {
 	for rows.Next() {
 		var post core.Post
 		var userid int64
-		err = rows.Scan(&post.Id, &post.Title, &post.Link, &post.Comment, &post.Date, &userid)
+		err = rows.Scan(&post.Id, &post.Title, &post.Link,
+			&post.Comment, &post.Date, &userid)
 		if err != nil {
 			return nil, err
 		}
 
 		post.User, err = d.GetLoginUserFromId(userid)
+		if err != nil {
+			return nil, err
+		}
+
+		post.Votes, err = d.GetVotes(post.Id)
 		if err != nil {
 			return nil, err
 		}

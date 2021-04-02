@@ -114,6 +114,68 @@ func Js(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, core.Info.PathStatic+"js/"+r.URL.Path[len("/js/"):])
 }
 
+type VoteType int
+
+const (
+	VOTETYPE_UP VoteType = 0
+	VOTETYPE_DOWN VoteType = 1
+)
+
+func votePost(w http.ResponseWriter, r *http.Request, urlPath string, voteType VoteType) {
+	if len(r.URL.Path) <= len(urlPath) {
+		// ERROR: URL Path too short
+		fmt.Println("URL Path too short")
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	// Get session and username from it
+	session := fetchSession(r)
+	if session == nil {
+		// ERROR: Session not found
+		fmt.Println("Session not found")
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	// Get post ID from URL Path
+	postIdStr := r.URL.Path[len(urlPath):]
+	postId, err := strconv.ParseInt(postIdStr, 10, 64)
+	if err != nil {
+		// ERROR: Cannot convert to int
+		fmt.Println("Cannot conver to int")
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	// Update the database
+	switch voteType {
+	case VOTETYPE_UP:
+		err = database.DBase.VotePost(session.Name, postId)
+	case VOTETYPE_DOWN:
+		err = database.DBase.DelVotePost(session.Name, postId)
+	}
+	if err != nil {
+		// ERROR: Database
+		fmt.Println("Database error")
+		fmt.Println(err)
+		http.Redirect(w, r, "/", http.StatusNotFound)
+		return
+	}
+
+	http.Redirect(w, r, "/post/"+postIdStr, http.StatusFound)
+}
+
+// Vote Handler | Handles voting up
+func VotePostUp(w http.ResponseWriter, r *http.Request) {
+	votePost(w, r, "/vote_up/", VOTETYPE_UP)
+}
+
+// Vote Handler | Handles voting down
+func VotePostDown(w http.ResponseWriter, r *http.Request) {
+	votePost(w, r, "/vote_down/", VOTETYPE_DOWN)
+}
+
 // Login Handler | Handles signups and logins requests
 func Login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()

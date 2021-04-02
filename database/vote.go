@@ -2,6 +2,7 @@ package database
 
 import (
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/mtcw99/disnews/core"
 )
 
 func (d *Database) VotePost(username string, postId int64) error {
@@ -29,7 +30,7 @@ func (d *Database) DelVotePost(username string, postId int64) error {
 
 	_, err = d.db.Exec(`
 	DELETE FROM VotesPosts
-	WHERE user_id=?, post_id=?
+	WHERE user_id=? AND post_id=?
 	`, userId, postId)
 	if err != nil {
 		return err
@@ -49,4 +50,8 @@ func (d *Database) GetVotes(postId int64) (int64, error) {
 	}
 
 	return count, nil
+}
+
+func (d *Database) GetVote(username string, postId int64) (core.UserVoteType, error) {
+	return core.USERVOTETYPE_NONE, nil
 }

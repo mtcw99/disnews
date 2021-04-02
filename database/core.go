@@ -95,6 +95,7 @@ func (d *Database) Setup() error {
 			FOREIGN KEY(post_id)
 			REFERENCES Posts(id)
 			ON DELETE CASCADE
+		, UNIQUE(user_id, post_id)
 	);
 	`
 

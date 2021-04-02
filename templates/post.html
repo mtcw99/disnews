@@ -2,7 +2,12 @@
 {{define "content"}}
 <h1>disnews</h1>
 <h2><a href="{{.Data.Post.Link}}">{{.Data.Post.Title}}</a></h2>
-<small>{{.Data.Post.Link}} by <a href="/profile/{{.Data.Post.User}}">{{.Data.Post.User}}</a> | {{.Data.Post.Date}}</small>
+<small>
+{{if .SessionInfo}}
+<a href="/vote_up/{{.Data.Post.Id}}">UP</a> /
+<a href="/vote_down/{{.Data.Post.Id}}">DOWN</a>
+{{end}}
+Votes: {{.Data.Post.Votes}} | {{.Data.Post.Link}} by <a href="/profile/{{.Data.Post.User}}">{{.Data.Post.User}}</a> | {{.Data.Post.Date}}</small>
 <p>
 {{.Data.Post.Comment}}
 </p>

@@ -12,6 +12,7 @@ type Post struct {
 	Link    string
 	Comment string
 	Date    string
+	Votes	int64
 }
 
 type PostComments struct {

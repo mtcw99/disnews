@@ -37,6 +37,8 @@ func main() {
 	mux.HandleFunc("/profile/", handlers.Profile)
 	mux.HandleFunc("/profile_update/", handlers.ProfileUpdate)
 	mux.HandleFunc("/comment/", handlers.Comment)
+	mux.HandleFunc("/vote_up/", handlers.VotePostUp)
+	mux.HandleFunc("/vote_down/", handlers.VotePostDown)
 
 	http.ListenAndServe(":8080", nosurf.New(mux))
 }
