@@ -51,6 +51,7 @@ func (d *Database) GetPostAndComments(indexStr string) (core.PostComments, error
 	if err != nil {
 		return core.PostComments{}, err
 	}
+	postComments.Post.ParseVoted = core.USERVOTETYPE_NONE
 
 	// Gets votes of this post
 	postComments.Post.Votes, err = d.GetVotes(postComments.Post.Id)
