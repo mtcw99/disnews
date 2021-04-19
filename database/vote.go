@@ -53,5 +53,21 @@ func (d *Database) GetVotes(postId int64) (int64, error) {
 }
 
 func (d *Database) GetVote(username string, postId int64) (core.UserVoteType, error) {
-	return core.USERVOTETYPE_NONE, nil
+	userId, err := d.GetLoginId(username)
+	if err != nil {
+		return core.USERVOTETYPE_NONE, err
+	}
+
+	var count int64
+	err = d.db.QueryRow(`
+	SELECT COUNT(post_id)
+	FROM VotesPosts
+	WHERE post_id=? AND user_id=?
+	`, postId, userId).Scan(&count)
+
+	if count == 1 {
+		return core.USERVOTETYPE_UP, nil
+	} else {
+		return core.USERVOTETYPE_NONE, nil
+	}
 }

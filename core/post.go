@@ -12,7 +12,8 @@ type Post struct {
 	Link    string
 	Comment string
 	Date    string
-	Votes	int64
+	Votes   int64
+	ParseVoted UserVoteType
 }
 
 type PostComments struct {

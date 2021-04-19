@@ -4,8 +4,11 @@
 <h2><a href="{{.Data.Post.Link}}">{{.Data.Post.Title}}</a></h2>
 <small>
 {{if .SessionInfo}}
-<a href="/vote_up/{{.Data.Post.Id}}">UP</a> /
-<a href="/vote_down/{{.Data.Post.Id}}">DOWN</a>
+  {{if eq .Data.Post.ParseVoted 0 }}
+    <a href="/vote_up/{{.Data.Post.Id}}">UP</a>
+  {{else}}
+    <a href="/vote_down/{{.Data.Post.Id}}">DOWN</a>
+  {{end}}
 {{end}}
 Votes: {{.Data.Post.Votes}} | {{.Data.Post.Link}} by <a href="/profile/{{.Data.Post.User}}">{{.Data.Post.User}}</a> | {{.Data.Post.Date}}</small>
 <p>

@@ -94,13 +94,18 @@ func SubmitPost(w http.ResponseWriter, r *http.Request) {
 
 // View the requested post
 func PostView(w http.ResponseWriter, r *http.Request) {
+	session := fetchSession(r)
 	id := r.URL.Path[len("/post/"):]
 	postComments, err := database.DBase.GetPostAndComments(id)
 	if err != nil {
 		fmt.Println(err)
 		http.Redirect(w, r, "/", http.StatusNotFound)
 	} else {
-		core.RenderTemplate(w, "post.html", fetchSession(r), postComments, nosurf.Token(r))
+		if session != nil {
+			postComments.Post.ParseVoted, err = database.DBase.GetVote(
+				session.Name, postComments.Post.Id)
+		}
+		core.RenderTemplate(w, "post.html", session, postComments, nosurf.Token(r))
 	}
 }
 
@@ -117,7 +122,7 @@ func Js(w http.ResponseWriter, r *http.Request) {
 type VoteType int
 
 const (
-	VOTETYPE_UP VoteType = 0
+	VOTETYPE_UP   VoteType = 0
 	VOTETYPE_DOWN VoteType = 1
 )
 
