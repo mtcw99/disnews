@@ -18,7 +18,6 @@ func main() {
 	database.DBase.Setup()
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 	defer database.DBase.Close()
 

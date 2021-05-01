@@ -26,7 +26,7 @@ func (d *Database) GetComments(postId int64) ([]core.Comment, error) {
 	rows, err := d.db.Query(`
 	SELECT	Profiles.display_name,
 		Users.name,
-		Comments.post_id, Comments.creation_date, Comments.comment
+		Comments.id, Comments.post_id, Comments.creation_date, Comments.comment
 	FROM Comments LEFT JOIN Users
 	ON Comments.user_id = Users.id
 	LEFT JOIN Profiles
@@ -45,6 +45,7 @@ func (d *Database) GetComments(postId int64) ([]core.Comment, error) {
 
 		err = rows.Scan(&comment.DisplayName,
 			&comment.Username,
+			&comment.Id,
 			&comment.PostId,
 			&comment.DateTime,
 			&comment.Comment)
