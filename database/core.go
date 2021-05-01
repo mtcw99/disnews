@@ -97,6 +97,20 @@ func (d *Database) Setup() error {
 			ON DELETE CASCADE
 		, UNIQUE(user_id, post_id)
 	);
+	CREATE TABLE IF NOT EXISTS VotesComments (
+		  id INTEGER NOT NULL PRIMARY KEY
+		, user_id INTEGER
+		, comment_id INTEGER
+		, CONSTRAINT fk_user_id
+			FOREIGN KEY(user_id)
+			REFERENCES Users(id)
+			ON DELETE CASCADE
+		, CONSTRAINT fk_comment_id
+			FOREIGN KEY(comment_id)
+			REFERENCES Comments(id)
+			ON DELETE CASCADE
+		, UNIQUE(user_id, comment_id)
+	);
 	`
 
 	_, err := d.db.Exec(sqlst)
