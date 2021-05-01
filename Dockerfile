@@ -9,5 +9,6 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=builder /go/src/github.com/mtcw99/disnews/disnews .
 COPY --from=builder /go/src/github.com/mtcw99/disnews/templates templates
+COPY --from=builder /go/src/github.com/mtcw99/disnews/static static
 CMD ["./disnews"]
 
