@@ -1,7 +1,7 @@
 FROM golang:1.16.3 as builder
 WORKDIR /go/src/github.com/mtcw99/disnews
 RUN go get github.com/mtcw99/disnews
-COPY . ./
+COPY . .
 RUN GOOS=linux go build -ldflags "-linkmode external -extldflags -static"
 
 FROM alpine:latest
@@ -10,5 +10,6 @@ WORKDIR /root/
 COPY --from=builder /go/src/github.com/mtcw99/disnews/disnews .
 COPY --from=builder /go/src/github.com/mtcw99/disnews/templates templates
 COPY --from=builder /go/src/github.com/mtcw99/disnews/static static
-CMD ["./disnews"]
+RUN mkdir db
+ENTRYPOINT ./disnews
 

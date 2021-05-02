@@ -14,7 +14,7 @@ import (
 
 func main() {
 	core.Info.PathTemplates = "./templates/"
-	err := database.DBase.New("./test.db")
+	err := database.DBase.New("./db/test.db")
 	database.DBase.Setup()
 	if err != nil {
 		log.Fatal(err)
